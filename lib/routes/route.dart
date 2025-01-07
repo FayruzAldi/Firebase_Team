@@ -16,7 +16,7 @@ class AppPages {
   static final List<GetPage> pages = [
     GetPage(name: MyRoutes.login, page: () => const LoginPage(), binding: LoginBinding()),
     GetPage(name: MyRoutes.signup, page: () => const SignupPage(), binding: LoginBinding()),
-    GetPage(name: MyRoutes.todo, page: () => const TodoPage()),
+    GetPage(name: MyRoutes.todo, page: () =>  TodoPage()),
     GetPage(name: MyRoutes.edit, page: () => const EditPage()),
   ];
 }
