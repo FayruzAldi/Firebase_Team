@@ -5,6 +5,7 @@ import 'package:to_do_list_app/Models/Todo_model.dart';
 import 'package:to_do_list_app/widgets/floating_window.dart';
 
 const String Collectionname = "TodoList";
+const String SubCollectionname = "Todo_stuff";
 
 class TodolistController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -12,7 +13,7 @@ class TodolistController extends GetxController {
 
   late final CollectionReference<TodoModel> _todosRef;
 
-  //Firebase Todos
+  // Initialize Todos collection with converter
   TodolistController() {
     _todosRef = _firestore.collection(Collectionname).withConverter<TodoModel>(
           fromFirestore: (snapshot, _) {
@@ -26,19 +27,35 @@ class TodolistController extends GetxController {
         );
   }
 
-  Stream<QuerySnapshot<TodoModel>> getTodos(){
+  Stream<QuerySnapshot<TodoModel>> getTodos() {
     return _todosRef.snapshots();
   }
 
-  Future<List<TodoSubModel>> getTodoSubItems(String todoId) async {
-    final todoStuffRef = _firestore.collection(Collectionname).doc(todoId).collection('Todo_stuff');
-    final snapshot = await todoStuffRef.get();
-
-    // If no items in the collection, return an empty list
-    return snapshot.docs.map((doc) => TodoSubModel.fromJson(doc.data())).toList();
+  Stream<List<TodoSubModel>> getTodoSubItemsStream(String todoId) {
+    return _firestore
+        .collection(Collectionname)
+        .doc(todoId)
+        .collection(SubCollectionname)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => TodoSubModel.fromJson(doc.data(), doc.id))
+            .toList());
   }
 
-  //floating window
+  Future<void> updateTodos(String todoId, String subtodoID, TodoSubModel todoSubModel) async {
+    try {
+      final todoStuffRef = _firestore
+          .collection(Collectionname)
+          .doc(todoId)
+          .collection(SubCollectionname);
+      await todoStuffRef.doc(subtodoID).update(todoSubModel.toJson());
+      print("Sub-item updated successfully");
+    } catch (e) {
+      print("Error updating sub-item: $e");
+    }
+  }
+
+  // Floating window logic remains unchanged
   void showFloatingWindow(BuildContext context) {
     final overlay = Overlay.of(context);
 
