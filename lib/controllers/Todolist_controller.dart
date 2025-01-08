@@ -56,6 +56,7 @@ class TodolistController extends GetxController {
   }
 
   // Floating window logic remains unchanged
+
   void showFloatingWindow(BuildContext context, String title) {
     final overlay = Overlay.of(context);
 
@@ -65,7 +66,8 @@ class TodolistController extends GetxController {
           onClose: () {
             _floatingWindow?.remove();
             _floatingWindow = null;
-          }, title: title,
+          }, 
+          title: title,
         );
       },
     );
