@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:to_do_list_app/widgets/mycolors.dart';
 
 class FloatingWindow extends StatelessWidget {
+  final String title;
   final VoidCallback onClose; // Callback to close the window
   final int itemCount; // Number of tasks to show in the list
 
   const FloatingWindow({
     super.key,
     required this.onClose,
-    this.itemCount = 5, // Default to 5 items
+    this.itemCount = 5, 
+    required this.title, // Default to 5 items
   });
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController _controller = TextEditingController(text: title);
     return GestureDetector(
       onTap: onClose, // Close the floating window when the backdrop is tapped
       child: Stack(
@@ -32,17 +36,22 @@ class FloatingWindow extends StatelessWidget {
                 height: MediaQuery.of(context).size.height * 0.6,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: ColorTile,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Floating Window',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: _controller,
+                        style: TextStyle(
+                          fontSize: 28
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 8),
                     Expanded(
                       child: ListView.builder(
                         itemCount: itemCount,
@@ -50,8 +59,10 @@ class FloatingWindow extends StatelessWidget {
                           return ListTile(
                             tileColor: const Color.fromARGB(255, 164, 198, 255),
                             title: Text("Task $index"),
-                            trailing: Checkbox(
-                              value: false,
+                            leading: Radio<bool>(
+                              value: true,
+                              groupValue: false,
+                              toggleable: true,
                               onChanged: (value) {
                                 // Handle checkbox change
                               },
@@ -61,9 +72,17 @@ class FloatingWindow extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: onClose, // Close the floating window
-                      child: const Text('Close'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          onPressed: onClose, // Close the floating window
+                          icon: Icon(
+                            Icons.arrow_forward_outlined,
+                            size: 32,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
