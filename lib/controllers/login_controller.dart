@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../Models/login_model.dart';
+import '../Models/user_model.dart';
 
 class LoginController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email'],
+    signInOption: SignInOption.standard,
+  );
+  
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   
@@ -30,11 +38,30 @@ class LoginController extends GetxController {
 
     try {
       isLoading.value = true;
-      await _auth.signInWithEmailAndPassword(
+      
+      // Membuat model login
+      final loginData = LoginModel(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
-      Get.offAllNamed('/todo'); // Redirect ke halaman todo setelah login berhasil
+
+      // Login ke Firebase Auth
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: loginData.email,
+        password: loginData.password,
+      );
+
+      // Mengambil data user dari Firestore
+      final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+      if (userDoc.exists) {
+        final userData = UserModel.fromJson({
+          'uid': userCredential.user!.uid,
+          ...userDoc.data()!
+        });
+        print('Login berhasil untuk user: ${userData.name}');
+      }
+
+      Get.offAllNamed('/todo');
     } on FirebaseAuthException catch (e) {
       String message = 'Terjadi kesalahan';
       if (e.code == 'user-not-found') {
@@ -67,7 +94,6 @@ class LoginController extends GetxController {
       isLoading.value = true;
       
       print('Memulai proses Google Sign In...');
-      // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       
       if (googleUser == null) {
@@ -77,19 +103,31 @@ class LoginController extends GetxController {
       }
 
       print('Mendapatkan detail autentikasi...');
-      // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       print('Membuat kredensial Firebase...');
-      // Create a new credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
       print('Mencoba sign in ke Firebase...');
-      // Sign in to Firebase with the Google credential
-      await _auth.signInWithCredential(credential);
+      final userCredential = await _auth.signInWithCredential(credential);
+      
+      // Menyimpan atau mengupdate data user di Firestore
+      final userData = UserModel(
+        uid: userCredential.user!.uid,
+        name: googleUser.displayName ?? '',
+        email: googleUser.email,
+        createdAt: DateTime.now(),
+        photoUrl: googleUser.photoUrl,
+      );
+
+      await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set(userData.toJson(), SetOptions(merge: true));
+
       print('Login berhasil, mengarahkan ke halaman todo...');
       Get.offAllNamed('/todo');
     } catch (e) {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../Models/signup_model.dart';
+import '../Models/user_model.dart';
 
 class SignupController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -34,20 +36,36 @@ class SignupController extends GetxController {
 
     try {
       isLoading.value = true;
-      // Membuat user baru di Firebase Auth
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+
+      // Membuat model signup
+      final signupData = SignupModel(
+        name: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text,
+        createdAt: DateTime.now(),
+      );
+
+      // Membuat user baru di Firebase Auth
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: signupData.email,
+        password: signupData.password,
+      );
+
+      // Membuat model user
+      final userData = UserModel(
+        uid: userCredential.user!.uid,
+        name: signupData.name,
+        email: signupData.email,
+        createdAt: signupData.createdAt,
       );
 
       // Menyimpan data tambahan user di Firestore
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'name': nameController.text.trim(),
-        'email': emailController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set(userData.toJson());
 
-      Get.offAllNamed('/todo'); // Redirect ke halaman todo setelah signup berhasil
+      Get.offAllNamed('/todo');
     } on FirebaseAuthException catch (e) {
       String message = 'Terjadi kesalahan';
       if (e.code == 'weak-password') {
