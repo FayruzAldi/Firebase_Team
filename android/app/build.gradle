@@ -11,7 +11,7 @@ plugins {
 android {
     namespace = "com.teamfirebase.todolist"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "25.1.8937393"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -44,4 +44,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
 }

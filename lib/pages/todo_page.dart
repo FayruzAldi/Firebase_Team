@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:to_do_list_app/Models/Todo_model.dart';
 import 'package:to_do_list_app/controllers/Todolist_controller.dart';
 import 'package:to_do_list_app/widgets/mycolors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class TodoPage extends StatelessWidget {
   TodoPage({super.key});
@@ -22,19 +24,45 @@ class TodoPage extends StatelessWidget {
           ),
         ),
         actions: [
-          IconButton(onPressed: () {
-            Get.defaultDialog(
+          IconButton(
+            onPressed: () {
+              Get.defaultDialog(
                 title: "Logout",
-                middleText: "Are you sure you want to log out?",
-                textCancel: "Cancel",
-                textConfirm: "Logout",
+                middleText: "Apakah Anda yakin ingin keluar?",
+                textCancel: "Batal",
+                textConfirm: "Keluar",
                 confirmTextColor: Colors.white,
-                onConfirm: () {
-                  Get.back(); // Close the dialog
+                onConfirm: () async {
+                  try {
+                    // Logout dari Firebase terlebih dahulu
+                    await FirebaseAuth.instance.signOut();
+                    
+                    // Coba logout dari Google
+                    try {
+                      final GoogleSignIn googleSignIn = GoogleSignIn();
+                      if (await googleSignIn.isSignedIn()) {
+                        await googleSignIn.signOut();
+                      }
+                    } catch (e) {
+                      // Abaikan error Google Sign In karena mungkin user tidak login dengan Google
+                      print('Google Sign Out Error: $e');
+                    }
+                    
+                    // Redirect ke halaman login
+                    Get.offAllNamed('/login');
+                  } catch (e) {
+                    Get.snackbar(
+                      'Error',
+                      'Gagal melakukan logout: $e',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.red,
+                      colorText: Colors.white,
+                    );
+                  }
                 },
               );
-          }, 
-          icon: Icon(Icons.exit_to_app),
+            }, 
+            icon: Icon(Icons.exit_to_app),
           )
         ],
         automaticallyImplyLeading: false,
