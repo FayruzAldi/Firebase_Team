@@ -11,18 +11,21 @@ class TodoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TodolistController todolistController = Get.put(TodolistController());
+    final TodolistController todolistController = Get.find();
 
     return Scaffold(
       backgroundColor: ColorBack,
       appBar: AppBar(
         foregroundColor: Colors.white,
-        title: Text('Kanye\'s list',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 30,
-          ),
-        ),
+        title: Obx(() {
+          return Text(
+            "${todolistController.username.value}'s List",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 30,
+            ),
+          );
+        }),
         actions: [
           IconButton(
             onPressed: () {
@@ -34,21 +37,20 @@ class TodoPage extends StatelessWidget {
                 confirmTextColor: Colors.white,
                 onConfirm: () async {
                   try {
-                    // Logout dari Firebase terlebih dahulu
+                    // Logout from Firebase
                     await FirebaseAuth.instance.signOut();
-                    
-                    // Coba logout dari Google
+
+                    // Try logging out from Google
                     try {
                       final GoogleSignIn googleSignIn = GoogleSignIn();
                       if (await googleSignIn.isSignedIn()) {
                         await googleSignIn.signOut();
                       }
                     } catch (e) {
-                      // Abaikan error Google Sign In karena mungkin user tidak login dengan Google
                       print('Google Sign Out Error: $e');
                     }
-                    
-                    // Redirect ke halaman login
+
+                    // Redirect to the login page
                     Get.offAllNamed('/login');
                   } catch (e) {
                     Get.snackbar(
@@ -61,7 +63,7 @@ class TodoPage extends StatelessWidget {
                   }
                 },
               );
-            }, 
+            },
             icon: Icon(Icons.exit_to_app),
           )
         ],
@@ -93,24 +95,27 @@ class TodoPage extends StatelessWidget {
                 },
                 child: Card(
                   color: ColorTile,
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
-                      
                       children: [
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.0, vertical: 3.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 todo.title,
                                 style: const TextStyle(
-                                    fontSize: 20,),
+                                  fontSize: 20,
+                                ),
                               ),
-                              
-                              Divider(color: Colors.black,),
+                              Divider(
+                                color: Colors.black,
+                              ),
                             ],
                           ),
                         ),
@@ -123,26 +128,27 @@ class TodoPage extends StatelessWidget {
                               return const Center(
                                   child: CircularProgressIndicator());
                             }
-                
+
                             if (subItemsSnapshot.hasError) {
                               return Text(
                                   "Error loading sub-items: ${subItemsSnapshot.error}");
                             }
-                
+
                             final subItems = subItemsSnapshot.data ?? [];
-                
+
                             return ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: subItems.length,
                               itemBuilder: (context, subIndex) {
                                 final subItem = subItems[subIndex];
-                
+
                                 return ListTile(
                                   title: Text(subItem.name),
                                   leading: Radio<bool>(
                                     value: true, // Represents the checked state
-                                    groupValue: subItem.isDone, // The current state of the item
+                                    groupValue: subItem
+                                        .isDone, // The current state of the item
                                     toggleable: true,
                                     onChanged: (value) async {
                                       await todolistController.updateTodosTask(
@@ -151,7 +157,7 @@ class TodoPage extends StatelessWidget {
                                         TodoSubModel(
                                           id: subItem.id,
                                           name: subItem.name,
-                                          isDone: !subItem.isDone, 
+                                          isDone: !subItem.isDone,
                                         ),
                                       );
                                     },
@@ -169,6 +175,24 @@ class TodoPage extends StatelessWidget {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Show dialog or navigate to a page for adding a new Todo
+          todolistController.showFloatingWindow(context,
+              "Title"); // Replace with your method to show the dialog or screen
+        },
+        icon: Icon(
+          Icons.draw_sharp,
+          size: 20,
+        ),
+        label: Text("Add Todo"),
+        backgroundColor: ColorTile,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(40), // Adjust this value for more or less rounding
+        ),
+        extendedPadding: EdgeInsets.symmetric(
+            horizontal:8), // Optional: Adjust the horizontal padding to control text width
       ),
     );
   }

@@ -1,22 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:to_do_list_app/Models/Todo_model.dart';
 import 'package:to_do_list_app/widgets/floating_window.dart';
 
-const String collection = "TodoData";
 const String Collectionname = "TodoList";
 const String SubCollectionname = "Todo_task";
 
 class TodolistController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   OverlayEntry? _floatingWindow;
 
   late final CollectionReference<TodoModel> _todosRef;
 
+  var username = 'meh'.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    getUsername();
+  }
+
   // Initialize Todos collection with converter
   TodolistController() {
-    _todosRef = _firestore.collection(collection).doc("eMO5nYTugkJAX4WLOv2w_todo").collection(Collectionname).withConverter<TodoModel>(
+    _todosRef = _firestore.collection(Collectionname).withConverter<TodoModel>(
           fromFirestore: (snapshot, _) {
             final data = snapshot.data();
             if (data == null) {
@@ -34,7 +43,7 @@ class TodolistController extends GetxController {
 
   Stream<List<TodoSubModel>> getTodosTask(String todoId) {
     return _firestore
-        .collection(collection).doc("eMO5nYTugkJAX4WLOv2w_todo").collection(Collectionname)
+        .collection(Collectionname)
         .doc(todoId)
         .collection(SubCollectionname)
         .snapshots()
@@ -46,7 +55,7 @@ class TodolistController extends GetxController {
   Future<void> updateTodosTask(String todoId, String subtodoID, TodoSubModel todoSubModel) async {
     try {
       final todoStuffRef = _firestore
-          .collection(collection).doc("eMO5nYTugkJAX4WLOv2w_todo").collection(Collectionname)
+          .collection(Collectionname)
           .doc(todoId)
           .collection(SubCollectionname);
       await todoStuffRef.doc(subtodoID).update(todoSubModel.toJson());
@@ -55,6 +64,28 @@ class TodolistController extends GetxController {
       print("Error updating sub-item: $e");
     }
   }
+
+  Future<void> getUsername() async {
+  try {
+      // Ensure user is logged in
+      if (_auth.currentUser == null) {
+        username.value = "Guest"; // Default value for non-authenticated users
+        return;
+      }
+
+      // Fetch user document from Firestore
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(_auth.currentUser!.uid).get();
+
+      if (userDoc.exists) {
+        username.value = userDoc['name'] ?? "Unknown"; // Fallback to "Unknown" if field is null
+      } else {
+        username.value = "Unknown"; // Default value if document doesn't exist
+      }
+    } catch (e) {
+      print("Error fetching username: $e");
+      username.value = "Error"; // Default value on error
+    }
+}
 
   // Floating window logic remains unchanged
 
@@ -73,6 +104,6 @@ class TodolistController extends GetxController {
       },
     );
 
-    overlay?.insert(_floatingWindow!);
+    overlay.insert(_floatingWindow!);
   }
 }

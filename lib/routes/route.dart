@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:to_do_list_app/bindings/Todo_binding.dart';
 import '../bindings/login_binding.dart';
 import '../bindings/signup_binding.dart';
 import '../middleware/auth_middleware.dart';
@@ -33,6 +34,7 @@ class AppPages {
     GetPage(
       name: MyRoutes.todo,
       page: () => TodoPage(),
+      binding: TodoBinding(),
       middlewares: [authMiddleware],
     ),
     GetPage(
