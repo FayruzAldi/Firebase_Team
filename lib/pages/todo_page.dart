@@ -88,7 +88,7 @@ class TodoPage extends StatelessWidget {
                         ),
                         StreamBuilder<List<TodoSubModel>>(
                           stream:
-                              todolistController.getTodoSubItemsStream(todoID),
+                              todolistController.getTodosTask(todoID),
                           builder: (context, subItemsSnapshot) {
                             if (subItemsSnapshot.connectionState ==
                                 ConnectionState.waiting) {
@@ -117,7 +117,7 @@ class TodoPage extends StatelessWidget {
                                     groupValue: subItem.isDone, // The current state of the item
                                     toggleable: true,
                                     onChanged: (value) async {
-                                      await todolistController.updateTodos(
+                                      await todolistController.updateTodosTask(
                                         todoID,
                                         subItem.id,
                                         TodoSubModel(
