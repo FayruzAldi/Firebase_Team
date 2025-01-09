@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:to_do_list_app/Models/Todo_model.dart';
 import 'package:to_do_list_app/widgets/floating_window.dart';
 
+const String Collection = "TodoData";
 const String Collectionname = "TodoList";
 const String SubCollectionname = "Todo_task";
 
@@ -25,7 +26,7 @@ class TodolistController extends GetxController {
 
   // Initialize Todos collection with converter
   TodolistController() {
-    _todosRef = _firestore.collection(Collectionname).withConverter<TodoModel>(
+    _todosRef = _firestore.collection(Collection).doc(_auth.currentUser!.uid + "_Todo").collection(Collectionname).withConverter<TodoModel>(
           fromFirestore: (snapshot, _) {
             final data = snapshot.data();
             if (data == null) {
@@ -43,7 +44,7 @@ class TodolistController extends GetxController {
 
   Stream<List<TodoSubModel>> getTodosTask(String todoId) {
     return _firestore
-        .collection(Collectionname)
+        .collection(Collection).doc(_auth.currentUser!.uid + "_Todo").collection(Collectionname)
         .doc(todoId)
         .collection(SubCollectionname)
         .snapshots()
@@ -55,7 +56,7 @@ class TodolistController extends GetxController {
   Future<void> updateTodosTask(String todoId, String subtodoID, TodoSubModel todoSubModel) async {
     try {
       final todoStuffRef = _firestore
-          .collection(Collectionname)
+          .collection(Collection).doc(_auth.currentUser!.uid + "_Todo").collection(Collectionname)
           .doc(todoId)
           .collection(SubCollectionname);
       await todoStuffRef.doc(subtodoID).update(todoSubModel.toJson());
