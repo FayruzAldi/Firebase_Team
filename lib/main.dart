@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:to_do_list_app/firebase_options.dart';
 import 'package:to_do_list_app/routes/route.dart';
 
@@ -15,18 +16,27 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      title: 'To Do List App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      initialRoute: MyRoutes.todo,
+      initialRoute: _initialRoute,
       getPages: AppPages.pages,
     );
+  }
+
+  String get _initialRoute {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Jika user sudah login, arahkan ke halaman todo
+      return MyRoutes.todo;
+    }
+    // Jika user belum login, arahkan ke halaman login
+    return MyRoutes.login;
   }
 }
 
