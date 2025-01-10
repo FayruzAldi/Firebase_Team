@@ -120,7 +120,6 @@ class LoginController extends GetxController {
         name: googleUser.displayName ?? '',
         email: googleUser.email,
         createdAt: DateTime.now(),
-        photoUrl: googleUser.photoUrl,
       );
 
       await _firestore
