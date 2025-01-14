@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:to_do_list_app/Models/Todo_model.dart';
 import 'package:to_do_list_app/controllers/Todolist_controller.dart';
+import 'package:to_do_list_app/routes/route.dart';
 import 'package:to_do_list_app/widgets/mycolors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -51,7 +52,7 @@ class TodoPage extends StatelessWidget {
                     }
 
                     // Redirect to the login page
-                    Get.offAllNamed('/login');
+                    Get.offAllNamed(MyRoutes.login);
                   } catch (e) {
                     Get.snackbar(
                       'Error',
@@ -176,23 +177,14 @@ class TodoPage extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Show dialog or navigate to a page for adding a new Todo
           todolistController.showFloatingWindow(context,
               "Title"); // Replace with your method to show the dialog or screen
         },
-        icon: Icon(
-          Icons.draw_sharp,
-          size: 20,
-        ),
-        label: Text("Add Todo"),
+        child: Icon(Icons.add),
         backgroundColor: ColorTile,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(40), // Adjust this value for more or less rounding
-        ),
-        extendedPadding: EdgeInsets.symmetric(
-            horizontal:8), // Optional: Adjust the horizontal padding to control text width
       ),
     );
   }
