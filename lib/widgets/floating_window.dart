@@ -29,14 +29,14 @@ class FloatingWindow extends StatelessWidget {
           // Floating content
           Center(
             child: Material(
-              elevation: 8,
+              elevation: 6,
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.8,
                 height: MediaQuery.of(context).size.height * 0.6,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: ColorTile,
+                  color: colorTile,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(

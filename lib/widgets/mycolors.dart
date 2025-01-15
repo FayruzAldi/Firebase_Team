@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
 
-const ColorHeader = Color(0xff6D2323);
-const ColorBack = Color(0xffE5D0AC);
-const ColorTile = Color(0xffFEF9E1);
+const mainColor1 = Color.fromARGB(255, 223, 109, 45);
+const colorBack = Color.fromARGB(255, 229, 208, 172);
+const colorTile = Color.fromARGB(255, 255, 250, 236);
