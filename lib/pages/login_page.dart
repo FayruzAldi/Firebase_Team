@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:to_do_list_app/routes/route.dart';
+import 'package:to_do_list_app/widgets/mybutton.dart';
+import 'package:to_do_list_app/widgets/mycolors.dart';
+import 'package:to_do_list_app/widgets/mytextfield.dart';
 import '../controllers/login_controller.dart';
 
 class LoginPage extends StatelessWidget {
@@ -8,48 +12,59 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LoginController controller = Get.find<LoginController>();
-    
+
     return Scaffold(
+      backgroundColor: colorBack,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 50),
-                const Icon(
-                  Icons.task_alt,
-                  size: 100,
-                  color: Colors.blue,
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Selamat Datang',
+                Spacer(),
+                Text(
+                  'Welcome To',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontFamily: 'WelcomeFont',
+                    fontSize: 32,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  'To Do List App',
+                  style: TextStyle(
+                    fontFamily: 'WelcomeFont',
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-                TextField(
-                  controller: controller.emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Obx(() => TextField(
-                  controller: controller.passwordController,
-                  obscureText: controller.isPasswordHidden.value,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock),
+                Spacer(),
+                MyTextField(
+                    hintText: 'Email',
+                    isObsecure: false,
+                    controller: controller.emailController,
+                    fillColor: Colors.transparent,
+                    filled: true,
+                    borderColor: Colors.black,
+                    focusedBorderColor: Colors.black,
+                    borderRadius: 10,
+                    prefixIcon: Icon(Icons.email)),
+                const SizedBox(height: 20),
+                Obx(
+                  () => MyTextField(
+                    hintText: 'Password',
+                    isObsecure: controller.isPasswordHidden.value,
+                    controller: controller.passwordController,
+                    fillColor: Colors.transparent,
+                    filled: true,
+                    borderColor: Colors.black,
+                    focusedBorderColor: Colors.black,
+                    borderRadius: 10,
+                    prefixIcon: Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.isPasswordHidden.value
@@ -58,66 +73,78 @@ class LoginPage extends StatelessWidget {
                       ),
                       onPressed: controller.togglePasswordVisibility,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                   ),
-                )),
-                const SizedBox(height: 24),
+                ),
+                const SizedBox(height: 40),
                 Obx(() => ElevatedButton(
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : controller.login,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: controller.isLoading.value
-                      ? const CircularProgressIndicator()
-                      : const Text(
-                          'Masuk',
-                          style: TextStyle(fontSize: 16),
+                      onPressed:
+                          controller.isLoading.value ? null : controller.login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: mainColor1,
+                        minimumSize: Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                )),
-                const SizedBox(height: 16),
+                        elevation: 6
+                      ),
+                      child: controller.isLoading.value
+                          ? const CircularProgressIndicator()
+                          : const Text(
+                              'Login',
+                              style: TextStyle(fontSize: 18, color: Colors.white),
+                            ),
+                    )),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Belum punya akun?'),
-                    TextButton(
-                      onPressed: () => Get.toNamed('/signup'),
-                      child: const Text('Daftar'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Row(
-                  children: [
-                    Expanded(child: Divider()),
+                    Expanded(child: Divider(color: Colors.black)),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('atau'),
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text(
+                        'or',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
-                    Expanded(child: Divider()),
+                    Expanded(child: Divider(color: Colors.black)),
                   ],
                 ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
+                const SizedBox(height: 20),
+                MyButton(
+                  text: 'Signin With Google',
+                  imageAsset: 'lib/assets/google_logo.png',
+                  backgroundColor: colorBack,
+                  textColor: Colors.black.withOpacity(0.63),
+                  fontSize: 16,
+                  borderRadius: 10,
+                  sideColor: Colors.black,
+                  elevation: 2,
                   onPressed: controller.signInWithGoogle,
-                  icon: Image.asset(
-                    'lib/assets/google_logo.png',
-                    height: 24,
-                  ),
-                  label: const Text('Masuk dengan Google'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
                 ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                        "Don't have an account?",
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                    ),
+                    TextButton(
+                      onPressed: () {Get.toNamed(MyRoutes.signup);},
+                      child: Text(
+                        'Register',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Spacer()
               ],
             ),
           ),
