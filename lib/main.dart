@@ -2,19 +2,38 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:to_do_list_app/firebase_options.dart';
 import 'package:to_do_list_app/routes/route.dart';
+import 'package:to_do_list_app/controllers/onboarding_controller.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
+Future<void> main() async {
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    
+    // Inisialisasi Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    // Cek status onboarding
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool(OnboardingController.ONBOARDING_KEY) ?? false;
+    
+    runApp(MyApp(hasSeenOnboarding: hasSeenOnboarding));
+  } catch (e) {
+    print('Error initializing app: $e');
+    runApp(const MyApp(hasSeenOnboarding: false));
+  }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool hasSeenOnboarding;
+  
+  const MyApp({
+    super.key,
+    required this.hasSeenOnboarding,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,19 +43,26 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      initialRoute: _initialRoute,
+      initialRoute: _determineInitialRoute(),
       getPages: AppPages.pages,
     );
   }
 
-  String get _initialRoute {
+  String _determineInitialRoute() {
     final user = FirebaseAuth.instance.currentUser;
+    
+    // Jika user sudah login, langsung ke todo
     if (user != null) {
-      // Jika user sudah login, arahkan ke halaman todo
       return MyRoutes.todo;
     }
-    // Jika user belum login, arahkan ke halaman login
-    return MyRoutes.login;
+    
+    // Jika belum login tapi sudah pernah lihat onboarding, ke login
+    if (hasSeenOnboarding) {
+      return MyRoutes.login;
+    }
+    
+    // Jika belum login dan belum pernah lihat onboarding, ke onboarding
+    return MyRoutes.onboarding;
   }
 }
 
