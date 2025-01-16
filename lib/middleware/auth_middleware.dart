@@ -14,8 +14,8 @@ class AuthMiddleware extends GetMiddleware {
       return const RouteSettings(name: MyRoutes.login);
     }
     
-    // Jika sudah login dan mencoba mengakses halaman login/signup
-    if ((route == MyRoutes.login || route == MyRoutes.signup) && user != null) {
+    // Jika sudah login dan mencoba mengakses halaman login/signup/onboarding
+    if ((route == MyRoutes.login || route == MyRoutes.signup || route == MyRoutes.onboarding) && user != null) {
       return const RouteSettings(name: MyRoutes.todo);
     }
     
