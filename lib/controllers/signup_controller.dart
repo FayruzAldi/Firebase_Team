@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:to_do_list_app/routes/route.dart';
 import '../Models/signup_model.dart';
 import '../Models/user_model.dart';
 
@@ -65,7 +66,7 @@ class SignupController extends GetxController {
           .doc(userCredential.user!.uid)
           .set(userData.toJson());
 
-      Get.offAllNamed('/todo');
+      Get.offAllNamed(MyRoutes.todo);
     } on FirebaseAuthException catch (e) {
       String message = 'Terjadi kesalahan';
       if (e.code == 'weak-password') {
