@@ -1,4 +1,6 @@
-  class TodoModel {
+  import 'package:get/get.dart';
+
+class TodoModel {
     final String title;
     final List<TodoSubModel> Todo_stuff;
 
@@ -22,16 +24,18 @@
     }
   }
 
-  class TodoSubModel {
-  final String id; // The document ID
-  final String name;
-  final bool isDone;
+ class TodoSubModel {
+  String id;
+  String name;
+  bool isDone;
+  RxBool isEdit; // Make isEdit reactive
 
   TodoSubModel({
     required this.id,
     required this.name,
     required this.isDone,
-  });
+    bool? isEdit,
+  }) : isEdit = (isEdit ?? false).obs;
 
   // Factory method to create an instance from JSON data
   factory TodoSubModel.fromJson(Map<String, dynamic> json, String id) {
