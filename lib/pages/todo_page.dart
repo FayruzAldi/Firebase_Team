@@ -19,10 +19,9 @@ class TodoPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorBack,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(65.0),
+        preferredSize: Size.fromHeight(80.0),
         child: AppBar(
           foregroundColor: Colors.white,
-          elevation: 20, //didnt work 
           title: Obx(() {
             return Padding(
               padding: const EdgeInsets.fromLTRB(15.0, 10.0, 0.0, 0.0),
@@ -31,7 +30,6 @@ class TodoPage extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 30,
-                  decorationColor: Colors.white,
                 ),
               ),
             );
@@ -43,35 +41,24 @@ class TodoPage extends StatelessWidget {
                 onPressed: () {
                   Get.defaultDialog(
                     title: "Logout",
-                    middleText: "Apakah Anda yakin ingin keluar?",
-                    textCancel: "Batal",
-                    textConfirm: "Keluar",
-                    confirmTextColor: Colors.white,
-                    cancelTextColor: Colors.white,
+                    middleText: "Are you sure you wanna leave?",
+                    textCancel: "Cancel",
+                    textConfirm: "Logout",
+                    buttonColor: mainColor1,
+                    confirmTextColor: Colors.black,
+                    cancelTextColor: Colors.black,
                     radius: 5,
                     backgroundColor: colorBack,
                     onConfirm: () async {
                       try {
                         await FirebaseAuth.instance.signOut();
-
-                        try {
-                          final GoogleSignIn googleSignIn = GoogleSignIn();
-                          if (await googleSignIn.isSignedIn()) {
-                            await googleSignIn.signOut();
-                          }
-                        } catch (e) {
-                          print('Google Sign Out Error: $e');
+                        final GoogleSignIn googleSignIn = GoogleSignIn();
+                        if (await googleSignIn.isSignedIn()) {
+                          await googleSignIn.signOut();
                         }
-
                         Get.offAllNamed(MyRoutes.login);
                       } catch (e) {
-                        Get.snackbar(
-                          'Error',
-                          'Gagal melakukan logout: $e',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Colors.red,
-                          colorText: Colors.white,
-                        );
+                        Get.snackbar('Error', 'Failed to logout: $e');
                       }
                     },
                   );
@@ -93,6 +80,16 @@ class TodoPage extends StatelessWidget {
           ],
           automaticallyImplyLeading: false,
           backgroundColor: mainColor1,
+          flexibleSpace: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                margin: EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 20.0),
+                height: 1.5,
+                color: Colors.white,
+              ),
+            ],
+          ),
         ),
       ),
       body: Padding(
@@ -103,35 +100,40 @@ class TodoPage extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-        
+
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
               return const Center(child: Text("No Todos Available"));
             }
-        
+
             final todos = snapshot.data!.docs;
-        
+
             return ListView.builder(
               itemCount: todos.length,
               itemBuilder: (context, index) {
                 final todo = todos[index].data(); // A TodoModel object
                 final todoID = todos[index].id;
-        
+
                 return GestureDetector(
                   onTap: () {
-                    todolistController.showFloatingWindow(context, todo.title);
+                    // Open the floating window for editing
+                    todolistController.getTodosTask(todoID).listen((subItems) {
+                      todolistController.showFloatingWindow(
+                        context,
+                        todo.title,
+                        subItems,
+                        todoID,
+                      );
+                    });
                   },
                   child: Card(
-                    elevation: 6,
                     color: colorTile,
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: [
                           Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8.0, vertical: 3.0),
+                            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -141,63 +143,58 @@ class TodoPage extends StatelessWidget {
                                     fontSize: 20,
                                   ),
                                 ),
-                                Divider(
-                                  color: Colors.black,
-                                ),
+                                Divider(color: Colors.black),
                               ],
                             ),
                           ),
                           StreamBuilder<List<TodoSubModel>>(
                             stream: todolistController.getTodosTask(todoID),
                             builder: (context, subItemsSnapshot) {
-                              if (subItemsSnapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
+                              if (subItemsSnapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator());
                               }
-        
+
                               if (subItemsSnapshot.hasError) {
-                                return Text(
-                                    "Error loading sub-items: ${subItemsSnapshot.error}");
+                                return Text("Error loading sub-items: ${subItemsSnapshot.error}");
                               }
-        
+
                               final subItems = subItemsSnapshot.data ?? [];
-        
+
                               return ListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: subItems.length,
                                 itemBuilder: (context, subIndex) {
                                   final subItem = subItems[subIndex];
-        
+
                                   return ListTile(
                                     title: Text(subItem.name),
                                     leading: Checkbox(
-                                      value: subItem
-                                          .isDone, 
-                                      activeColor: Colors.black,
-                                      onChanged: (value) async {
-                                        await todolistController.updateTodosTask(
-                                          todoID,
-                                          subItem.id,
-                                          TodoSubModel(id: subItem.id, name: subItem.name, isDone: value),
-                                        );
-                                      }
-                                    },
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
+                                      value: subItem.isDone,
+                                      onChanged: (bool? value) async {
+                                        if (value != null) {
+                                          await todolistController.updateTodosTask(
+                                            todoID,
+                                            subItem.id,
+                                            TodoSubModel(id: subItem.id, name: subItem.name, isDone: value),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
   onPressed: () {

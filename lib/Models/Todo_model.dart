@@ -2,24 +2,18 @@
 
 class TodoModel {
     final String title;
-    final List<TodoSubModel> Todo_stuff;
 
-    TodoModel({required this.title, required this.Todo_stuff});
+    TodoModel({required this.title});
 
     factory TodoModel.fromJson(Map<String, dynamic> json) {
       return TodoModel(
       title: json['Title'] as String,
-      Todo_stuff: (json['Todo_stuff'] as List<dynamic>? ?? []).map((item) {
-        // Handle cases where items may not have an id directly from sub-collection
-        return TodoSubModel.fromJson(item, item['id'] ?? '');
-      }).toList(),
     );
     }
 
     Map<String, dynamic> toJson() {
       return {
         'Title': title,
-        'Todo_stuff': Todo_stuff.map((item) => item.toJson()).toList(),
       };
     }
   }
