@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:to_do_list_app/routes/route.dart';
 import '../Models/login_model.dart';
 import '../Models/user_model.dart';
 
@@ -61,7 +62,7 @@ class LoginController extends GetxController {
         print('Login berhasil untuk user: ${userData.name}');
       }
 
-      Get.offAllNamed('/todo');
+      Get.offAllNamed(MyRoutes.todo);
     } on FirebaseAuthException catch (e) {
       String message = 'Terjadi kesalahan';
       if (e.code == 'user-not-found') {
@@ -128,7 +129,7 @@ class LoginController extends GetxController {
           .set(userData.toJson(), SetOptions(merge: true));
 
       print('Login berhasil, mengarahkan ke halaman todo...');
-      Get.offAllNamed('/todo');
+      Get.offAllNamed(MyRoutes.todo);
     } catch (e) {
       print('Error detail pada Google Sign In: $e');
       Get.snackbar(

@@ -77,8 +77,8 @@ class SignupPage extends StatelessWidget {
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.isPasswordHidden.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: controller.togglePasswordVisibility,
                     ),

@@ -16,83 +16,95 @@ class TodoPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorBack,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(65.0),
-        child: AppBar(
-          foregroundColor: Colors.white,
-          elevation: 20, //didnt work 
-          title: Obx(() {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(15.0, 10.0, 0.0, 0.0),
-              child: Text(
-                "${todolistController.username.value}'s List",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 30,
-                  decorationColor: Colors.white,
-                ),
-              ),
-            );
-          }),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0.0, 10.0, 15.0, 0.0),
-              child: IconButton(
-                onPressed: () {
-                  Get.defaultDialog(
-                    title: "Logout",
-                    middleText: "Apakah Anda yakin ingin keluar?",
-                    textCancel: "Batal",
-                    textConfirm: "Keluar",
-                    confirmTextColor: Colors.white,
-                    cancelTextColor: Colors.white,
-                    radius: 5,
-                    backgroundColor: colorBack,
-                    onConfirm: () async {
-                      try {
-                        await FirebaseAuth.instance.signOut();
+appBar: PreferredSize(
+  preferredSize: Size.fromHeight(80.0),
+  child: AppBar(
+    foregroundColor: Colors.white,
+    title: Obx(() {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(15.0, 10.0, 0.0, 0.0),
+        child: Text(
+          "${todolistController.username.value}'s List",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 30,
+            decorationColor: Colors.white,
+          ),
+        )
+      );
+    }),
+    actions: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(0.0, 10.0, 15.0, 0.0),
+        child: IconButton(
+          onPressed: () {
+            Get.defaultDialog(
+              title: "Logout",
+              middleText: "Are you sure you wanna leave?",
+              textCancel: "Batal",
+              textConfirm: "Keluar",
+              buttonColor: mainColor1,
+              confirmTextColor: Colors.black,
+              cancelTextColor: Colors.black,
+              radius: 5,
+              backgroundColor: colorBack,
+              onConfirm: () async {
+                try {
+                  await FirebaseAuth.instance.signOut();
 
-                        try {
-                          final GoogleSignIn googleSignIn = GoogleSignIn();
-                          if (await googleSignIn.isSignedIn()) {
-                            await googleSignIn.signOut();
-                          }
-                        } catch (e) {
-                          print('Google Sign Out Error: $e');
-                        }
+                  try {
+                    final GoogleSignIn googleSignIn = GoogleSignIn();
+                    if (await googleSignIn.isSignedIn()) {
+                      await googleSignIn.signOut();
+                    }
+                  } catch (e) {
+                    print('Google Sign Out Error: $e');
+                  }
 
-                        Get.offAllNamed(MyRoutes.login);
-                      } catch (e) {
-                        Get.snackbar(
-                          'Error',
-                          'Gagal melakukan logout: $e',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Colors.red,
-                          colorText: Colors.white,
-                        );
-                      }
-                    },
+                  Get.offAllNamed(MyRoutes.login);
+                } catch (e) {
+                  Get.snackbar(
+                    'Error',
+                    'Gagal melakukan logout: $e',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
                   );
-                },
-                icon: Container(
-                  padding: const EdgeInsets.fromLTRB(15.0, 0.0, 10.0, 15.0),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  child: Icon(
-                    Icons.logout,
-                    size: 30,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
+                }
+              },
+            );
+          },
+          icon: Container(
+            padding: const EdgeInsets.fromLTRB(15.0, 0.0, 10.0, 15.0),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
             ),
-          ],
-          automaticallyImplyLeading: false,
-          backgroundColor: mainColor1,
+            child: Icon(
+              Icons.logout,
+              size: 30,
+              color: Colors.black,
+            ),
+          ),
         ),
       ),
+    ],
+    automaticallyImplyLeading: false,
+    backgroundColor: mainColor1,
+    flexibleSpace: Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        // Adding a thin line as the underline
+        Container(
+          margin: EdgeInsets.fromLTRB(25.0, 0.0, 25.0,  20.0),
+          height: 1.5, // Thickness of the underline
+          color: Colors.white, // Color of the underline
+        ),
+      ],
+    ),
+  ),
+),
+
       body: Padding(
         padding: const EdgeInsets.fromLTRB(5.0, 20.0, 5.0, 0.0),
         child: StreamBuilder(

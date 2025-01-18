@@ -40,7 +40,6 @@ class OnboardingController extends GetxController {
         Get.offAllNamed(MyRoutes.login);
       } catch (e) {
         print('Error saving onboarding status: $e');
-        Get.offAllNamed(MyRoutes.login);
       }
     } else {
       pageController.nextPage(
