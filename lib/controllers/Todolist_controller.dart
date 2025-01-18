@@ -14,6 +14,8 @@ class TodolistController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   OverlayEntry? _floatingWindow;
 
+  final TitleController = TextEditingController();
+
   late final CollectionReference<TodoModel> _todosRef;
 
   var username = 'meh'.obs;
@@ -27,7 +29,11 @@ class TodolistController extends GetxController {
 
   // Initialize Todos collection with converter
   TodolistController() {
-    _todosRef = _firestore.collection(Collection).doc(_auth.currentUser!.uid + "_Todo").collection(Collectionname).withConverter<TodoModel>(
+    _todosRef = _firestore
+        .collection(Collection)
+        .doc(_auth.currentUser!.uid + "_Todo")
+        .collection(Collectionname)
+        .withConverter<TodoModel>(
           fromFirestore: (snapshot, _) {
             final data = snapshot.data();
             if (data == null) {
@@ -45,7 +51,9 @@ class TodolistController extends GetxController {
 
   Stream<List<TodoSubModel>> getTodosTask(String todoId) {
     return _firestore
-        .collection(Collection).doc(_auth.currentUser!.uid + "_Todo").collection(Collectionname)
+        .collection(Collection)
+        .doc(_auth.currentUser!.uid + "_Todo")
+        .collection(Collectionname)
         .doc(todoId)
         .collection(SubCollectionname)
         .snapshots()
@@ -55,21 +63,21 @@ class TodolistController extends GetxController {
   }
 
   Future<void> updateTodo(String todoId, TodoModel updatedTodo) async {
-  try {
-    final todoRef = _firestore
-        .collection(Collection)
-        .doc(_auth.currentUser!.uid + "_Todo")
-        .collection(Collectionname)
-        .doc(todoId);
-    await todoRef.update(updatedTodo.toJson());
-    print("Todo updated successfully");
-  } catch (e) {
-    print("Error updating todo: $e");
+    try {
+      final todoRef = _firestore
+          .collection(Collection)
+          .doc(_auth.currentUser!.uid + "_Todo")
+          .collection(Collectionname)
+          .doc(todoId);
+      await todoRef.update(updatedTodo.toJson());
+      print("Todo updated successfully");
+    } catch (e) {
+      print("Error updating todo: $e");
+    }
   }
-}
 
-
-  Future<void> updateTodosTask(String todoId, String subtodoID, TodoSubModel todoSubModel) async {
+  Future<void> updateTodosTask(
+      String todoId, String subtodoID, TodoSubModel todoSubModel) async {
     try {
       final todoStuffRef = _firestore
           .collection(Collection)
@@ -92,7 +100,10 @@ class TodolistController extends GetxController {
         return;
       }
 
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(_auth.currentUser!.uid).get();
+      DocumentSnapshot userDoc = await _firestore
+          .collection('users')
+          .doc(_auth.currentUser!.uid)
+          .get();
 
       if (userDoc.exists) {
         username.value = userDoc['name'] ?? "Unknown";
@@ -105,6 +116,21 @@ class TodolistController extends GetxController {
     }
   }
 
+  Future<String> getTodoTitle(String todoID) async {
+    try {
+      final todoRef = _firestore
+          .collection(Collection)
+          .doc(_auth.currentUser!.uid + "_Todo")
+          .collection(Collectionname)
+          .doc(todoID);
+      final snapshot = await todoRef.get();
+      return snapshot.data()?['Title'] ?? "No Title";
+    } catch (e) {
+      print("Error fetching title: $e");
+      return "Error";
+    }
+  }
+
   Future<void> addNewTodoTask(String todoID, String title) async {
     try {
       final todoRef = _firestore
@@ -114,7 +140,8 @@ class TodolistController extends GetxController {
           .doc(todoID)
           .collection(SubCollectionname);
 
-      TodoSubModel newTodoSubItem = TodoSubModel(id: '', name: title, isDone: false);
+      TodoSubModel newTodoSubItem =
+          TodoSubModel(id: '', name: title, isDone: false);
 
       await todoRef.add(newTodoSubItem.toJson());
       print("New Todo Added: $title");
@@ -132,7 +159,8 @@ class TodolistController extends GetxController {
           .doc(todoID)
           .collection(SubCollectionname);
 
-      TodoSubModel newCheckbox = TodoSubModel(id: '', name: title, isDone: false);
+      TodoSubModel newCheckbox =
+          TodoSubModel(id: '', name: title, isDone: false);
 
       await todoStuffRef.add(newCheckbox.toJson());
       print("New Checkbox Added: $title");
@@ -144,10 +172,10 @@ class TodolistController extends GetxController {
   // Show Floating Window For Create (Handles creating new todos)
   void showFloatingWindowForCreate(BuildContext context) {
     final overlay = Overlay.of(context);
-    
+
     // Remove the existing floating window if any
     _floatingWindow?.remove();
-    
+
     // Create the new floating window
     _floatingWindow = OverlayEntry(
       builder: (context) {
@@ -167,12 +195,15 @@ class TodolistController extends GetxController {
   }
 
   // Show Floating Window For Todo Details (Handles showing existing todo details)
-  void showFloatingWindow(BuildContext context, String title, List<TodoSubModel> items, String todoID) {
+  void showFloatingWindow(BuildContext context, String title,
+      List<TodoSubModel> items, String todoID) {
     final overlay = Overlay.of(context);
 
     // Remove the existing floating window if any
     _floatingWindow?.remove();
-    
+
+    Title.value = title;
+
     // Create the new floating window
     _floatingWindow = OverlayEntry(
       builder: (context) {

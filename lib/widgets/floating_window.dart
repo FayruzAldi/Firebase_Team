@@ -26,11 +26,7 @@ class FloatingWindow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TodolistController todolistController = Get.find();
-    // Use RxString for the title
-    todolistController.Title = title.obs;
-    
-    // Using an Obx widget to bind the controller to the reactive variable
-    TextEditingController _controller = TextEditingController();
+    todolistController.TitleController.text = title;
 
     return GestureDetector(
       onTap: onClose,
@@ -60,9 +56,9 @@ class FloatingWindow extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Obx(() {
-                        _controller.text = todolistController.Title.value;
+                        todolistController.TitleController.text = todolistController.Title.value;
                         return TextField(
-                          controller: _controller,
+                          controller: todolistController.TitleController,
                           onSubmitted: isCreateMode
                               ? null
                               : (value) async {
@@ -71,12 +67,11 @@ class FloatingWindow extends StatelessWidget {
                                       todoID,
                                       TodoModel(
                                         title: value,
-                                        Todo_stuff: items,
                                       ),
                                     );
-                                    todolistController.Title.value = value; 
-                                    print(todolistController.Title.value);
                                   }
+                                  todolistController.Title.value = value; 
+                                  print(todolistController.Title.value);
                                 },
                           style: TextStyle(fontSize: 28),
                           decoration: InputDecoration(
@@ -85,10 +80,10 @@ class FloatingWindow extends StatelessWidget {
                                 ? IconButton(
                                     icon: Icon(Icons.add),
                                     onPressed: () async {
-                                      if (_controller.text.isNotEmpty) {
+                                      if (todolistController.TitleController.text.isNotEmpty) {
                                         await todolistController.addNewTodoTask(
                                           todoID,
-                                          _controller.text,
+                                          todolistController.TitleController.text,
                                         );
                                         onClose(); // Close the window after adding
                                       }
