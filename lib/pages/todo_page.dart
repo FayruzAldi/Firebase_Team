@@ -6,6 +6,7 @@ import 'package:to_do_list_app/routes/route.dart';
 import 'package:to_do_list_app/widgets/mycolors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../services/notification_service.dart';
 
 class TodoPage extends StatelessWidget {
   TodoPage({super.key});
@@ -13,6 +14,7 @@ class TodoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TodolistController todolistController = Get.find();
+    final NotificationService notificationService = Get.find();
 
     return Scaffold(
       backgroundColor: colorBack,
@@ -51,7 +53,6 @@ appBar: PreferredSize(
               onConfirm: () async {
                 try {
                   await FirebaseAuth.instance.signOut();
-
                   try {
                     final GoogleSignIn googleSignIn = GoogleSignIn();
                     if (await googleSignIn.isSignedIn()) {

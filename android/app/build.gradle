@@ -10,16 +10,18 @@ plugins {
 
 android {
     namespace = "com.teamfirebase.todolist"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 34
+    buildToolsVersion = "34.0.0"
     ndkVersion = "25.1.8937393"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_17
     }
 
     defaultConfig {
@@ -47,6 +49,7 @@ flutter {
 }
 
 dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.android.gms:play-services-auth:20.7.0'

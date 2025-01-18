@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:to_do_list_app/routes/route.dart';
 import '../Models/login_model.dart';
 import '../Models/user_model.dart';
+import '../services/notification_service.dart';
 
 class LoginController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -20,6 +21,14 @@ class LoginController extends GetxController {
   
   final isLoading = false.obs;
   final isPasswordHidden = true.obs;
+
+  late final NotificationService _notificationService;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _notificationService = Get.find<NotificationService>();
+  }
 
   void togglePasswordVisibility() {
     isPasswordHidden.value = !isPasswordHidden.value;
@@ -40,19 +49,16 @@ class LoginController extends GetxController {
     try {
       isLoading.value = true;
       
-      // Membuat model login
       final loginData = LoginModel(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
 
-      // Login ke Firebase Auth
       final userCredential = await _auth.signInWithEmailAndPassword(
         email: loginData.email,
         password: loginData.password,
       );
 
-      // Mengambil data user dari Firestore
       final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
       if (userDoc.exists) {
         final userData = UserModel.fromJson({
@@ -60,6 +66,14 @@ class LoginController extends GetxController {
           ...userDoc.data()!
         });
         print('Login berhasil untuk user: ${userData.name}');
+        
+        print('Saving FCM token after login...');
+        await _notificationService.saveNewToken();
+        print('FCM token saved successfully');
+        
+        print('Showing login success notification...');
+        await _notificationService.showLoginSuccessNotification(userData.name);
+        print('Login notification sent');
       }
 
       Get.offAllNamed(MyRoutes.todo);
@@ -127,6 +141,18 @@ class LoginController extends GetxController {
           .collection('users')
           .doc(userCredential.user!.uid)
           .set(userData.toJson(), SetOptions(merge: true));
+
+      print('Login dengan Google berhasil untuk user: ${userData.name}');
+      
+      // Simpan FCM token
+      print('Saving FCM token after Google Sign In...');
+      await _notificationService.saveNewToken();
+      print('FCM token saved successfully');
+      
+      // Tampilkan notifikasi
+      print('Showing login success notification...');
+      await _notificationService.showLoginSuccessNotification(userData.name);
+      print('Login notification sent');
 
       print('Login berhasil, mengarahkan ke halaman todo...');
       Get.offAllNamed(MyRoutes.todo);
