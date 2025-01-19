@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:to_do_list_app/Models/Todo_model.dart';
 import 'package:to_do_list_app/widgets/mycolors.dart';
 import 'package:to_do_list_app/controllers/Todolist_controller.dart';
@@ -56,37 +55,39 @@ class FloatingWindow extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Obx(() {
-                        todolistController.TitleController.text = todolistController.Title.value;
+                        if (isCreateMode) {
+                          todolistController.TitleController.text = todolistController.CreateTitle.value; 
+                        } else {
+                          todolistController.TitleController.text = todolistController.Title.value; 
+                        }
                         return TextField(
                           controller: todolistController.TitleController,
                           onSubmitted: isCreateMode
-                              ? null
+                              ? (value) async {
+                                  if (value.isNotEmpty) {
+                                    todolistController.CreateTitle.value = value;
+                                  }
+                                }
                               : (value) async {
                                   if (value.isNotEmpty) {
                                     await todolistController.updateTodo(
                                       todoID,
-                                      TodoModel(
-                                        title: value,
-                                      ),
+                                      TodoModel(title: value),
                                     );
                                   }
-                                  todolistController.Title.value = value; 
-                                  print(todolistController.Title.value);
+                                  todolistController.Title.value = value;
                                 },
-                          style: TextStyle(fontSize: 28),
+                          style: const TextStyle(fontSize: 28),
                           decoration: InputDecoration(
                             hintText: "Enter Todo Title",
-                            suffixIcon: isCreateMode
+                            suffixIcon: !isCreateMode
                                 ? IconButton(
-                                    icon: Icon(Icons.add),
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,),
                                     onPressed: () async {
-                                      if (todolistController.TitleController.text.isNotEmpty) {
-                                        await todolistController.addNewTodoTask(
-                                          todoID,
-                                          todolistController.TitleController.text,
-                                        );
-                                        onClose(); // Close the window after adding
-                                      }
+                                      todolistController.deleteTodo(todoID);
+                                      onClose();
                                     },
                                   )
                                 : null,
@@ -94,117 +95,108 @@ class FloatingWindow extends StatelessWidget {
                         );
                       }),
                     ),
-                    if (!isCreateMode) ...[
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            final subItem = items[index];
-                            return Obx(() {
-                              return ListTile(
-                                tileColor: Color.fromARGB(255, 164, 198, 255),
-                                title: subItem.isEdit.value
-                                    ? TextField(
-                                        controller: TextEditingController(
-                                            text: subItem.name),
-                                        onSubmitted: (text) {
-                                          if (text.isNotEmpty) {
-                                            todolistController.updateTodosTask(
-                                              todoID,
-                                              subItem.id,
-                                              TodoSubModel(
-                                                id: subItem.id,
-                                                name: text,
-                                                isDone: subItem.isDone,
-                                              ),
-                                            );
-                                            subItem.isEdit.value = false;
-                                          }
-                                        })
-                                    : Text(subItem.name),
-                                leading: Checkbox(
-                                  value: subItem.isDone,
-                                  onChanged: (bool? value) async {
-                                    if (value != null) {
-                                      await todolistController.updateTodosTask(
-                                        todoID,
-                                        subItem.id,
-                                        TodoSubModel(
-                                          id: subItem.id,
-                                          name: subItem.name,
-                                          isDone: value,
-                                        ),
-                                      );
-                                    }
-                                  },
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: items.length + 1, // Include "new item" row.
+                        itemBuilder: (context, index) {
+                          if (index == items.length) {
+                            return ListTile(
+                              tileColor: const Color.fromARGB(255, 164, 198, 255),
+                              title: TextField(
+                                decoration: const InputDecoration(
+                                  hintText: "New Item",
                                 ),
-                                trailing: subItem.isEdit.value
-                                    ? null
-                                    : IconButton(
-                                        icon: Icon(Icons.edit),
-                                        onPressed: () {
-                                          subItem.isEdit.value = true;
-                                        },
-                                      ),
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                    ] else ...[
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: items.length + 1,
-                          itemBuilder: (context, index) {
-                            if (index == items.length) {
-                              return ListTile(
-                                tileColor: Color.fromARGB(255, 164, 198, 255),
-                                title: TextField(
-                                  decoration: InputDecoration(hintText: "New Item"),
-                                  onSubmitted: (value) async {
-                                    if (value.isNotEmpty) {
-                                      await todolistController.addNewCheckbox(
+                                onSubmitted: (value) async {
+                                  if (value.isNotEmpty) {
+                                    if (isCreateMode){
+                                      await todolistController.addSubTaskForCreate(
+                                        value
+                                      );
+                                    } else {
+                                      await todolistController.addNewTodoTask(
                                         todoID,
                                         value,
                                       );
                                     }
-                                  },
-                                ),
-                              );
-                            } else {
-                              final subItem = items[index];
-                              return ListTile(
-                                title: Text(subItem.name),
-                                leading: Checkbox(
-                                  value: subItem.isDone,
-                                  onChanged: (bool? value) async {
-                                    if (value != null) {
-                                      await todolistController.updateTodosTask(
-                                        todoID,
-                                        subItem.id,
-                                        TodoSubModel(
-                                          id: subItem.id,
-                                          name: subItem.name,
-                                          isDone: value,
+                                  }
+                                },
+                              ),
+                            );
+                          } else {
+                            final subItem = items[index];
+                            return Obx(() {
+                              return GestureDetector(
+                                onLongPress: () {
+                                  todolistController.deleteTodoTask(todoID, subItem.id);
+                                },
+                                child: ListTile(
+                                  title: subItem.isEdit.value
+                                      ? TextField(
+                                          controller: TextEditingController(
+                                              text: subItem.name),
+                                          onSubmitted: (text) async {
+                                            if (text.isNotEmpty) {
+                                              await todolistController
+                                                  .updateTodosTask(
+                                                todoID,
+                                                subItem.id,
+                                                TodoSubModel(
+                                                  id: subItem.id,
+                                                  name: text,
+                                                  isDone: subItem.isDone,
+                                                ),
+                                              );
+                                              subItem.isEdit.value = false;
+                                            }
+                                          },
+                                        )
+                                      : Text(subItem.name),
+                                  leading: Checkbox(
+                                    value: subItem.isDone,
+                                    onChanged: (bool? value) async {
+                                      if (value != null) {
+                                        await todolistController.updateTodosTask(
+                                          todoID,
+                                          subItem.id,
+                                          TodoSubModel(
+                                            id: subItem.id,
+                                            name: subItem.name,
+                                            isDone: value,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  trailing: subItem.isEdit.value
+                                      ? null
+                                      : IconButton(
+                                          icon: const Icon(Icons.edit),
+                                          onPressed: () {
+                                            subItem.isEdit.value = true;
+                                          },
                                         ),
-                                      );
-                                    }
-                                  },
                                 ),
                               );
-                            }
-                          },
-                        ),
+                            });
+                          }
+                        },
                       ),
-                    ],
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         IconButton(
-                          onPressed: onClose,
+                          onPressed: isCreateMode ? () {
+                            todolistController.addNewTodoWithSubTasks(
+                              todolistController.CreateTitle.value
+                            );
+                            onClose();
+                          } 
+                          : 
+                          onClose,
                           icon: Icon(
-                            Icons.arrow_forward_outlined,
+                            isCreateMode ? Icons.add : Icons.arrow_forward_outlined,
                             size: 32,
                           ),
                         ),
