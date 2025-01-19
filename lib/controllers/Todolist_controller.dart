@@ -15,11 +15,13 @@ class TodolistController extends GetxController {
   OverlayEntry? _floatingWindow;
 
   final TitleController = TextEditingController();
+  final CreateSubTasks = <TodoSubModel>[].obs;
 
   late final CollectionReference<TodoModel> _todosRef;
 
   var username = 'meh'.obs;
-  var Title = 'meh'.obs;
+  var Title = 'Task'.obs;
+  var CreateTitle = 'Task'.obs;
 
   @override
   void onInit() {
@@ -149,50 +151,77 @@ class TodolistController extends GetxController {
       print("Error adding new todo: $e");
     }
   }
-
-  Future<void> addNewCheckbox(String todoID, String title) async {
+  Future<void> addNewTodo(String title) async {
     try {
+      final todoRef = _firestore
+          .collection(Collection)
+          .doc(_auth.currentUser!.uid + "_Todo")
+          .collection(Collectionname);
+
+      TodoModel newTodoItem =
+          TodoModel(title: title);
+
+      await todoRef.add(newTodoItem.toJson());
+      print("New Todo Added: $title");
+    } catch (e) {
+      print("Error adding new todo: $e");
+    }
+  }
+
+  Future<void> deleteTodoTask(String todoID, String subtodoID) async{
+     try {
       final todoStuffRef = _firestore
           .collection(Collection)
           .doc(_auth.currentUser!.uid + "_Todo")
           .collection(Collectionname)
           .doc(todoID)
-          .collection(SubCollectionname);
+          .collection(SubCollectionname)
+          .doc(subtodoID);
 
-      TodoSubModel newCheckbox =
-          TodoSubModel(id: '', name: title, isDone: false);
-
-      await todoStuffRef.add(newCheckbox.toJson());
-      print("New Checkbox Added: $title");
+      await todoStuffRef.delete();
     } catch (e) {
       print("Error adding new checkbox: $e");
     }
   }
 
-  // Show Floating Window For Create (Handles creating new todos)
-  void showFloatingWindowForCreate(BuildContext context) {
-    final overlay = Overlay.of(context);
+  Future<void> deleteTodo(String todoID) async{
+     try {
+      final todoRef = _firestore
+          .collection(Collection)
+          .doc(_auth.currentUser!.uid + "_Todo")
+          .collection(Collectionname)
+          .doc(todoID);
 
-    // Remove the existing floating window if any
-    _floatingWindow?.remove();
-
-    // Create the new floating window
-    _floatingWindow = OverlayEntry(
-      builder: (context) {
-        return FloatingWindow(
-          onClose: () {
-            _floatingWindow?.remove();
-            _floatingWindow = null;
-          },
-          title: '',
-          items: [],
-          todoID: '',
-          isCreateMode: true,
-        );
-      },
-    );
-    overlay.insert(_floatingWindow!);
+      await todoRef.delete();
+      print("deleted");
+    } catch (e) {
+      print("Error adding new checkbox: $e");
+    }
   }
+
+  void showFloatingWindowForCreate(BuildContext context) {
+  final overlay = Overlay.of(context);
+
+  // Remove the existing floating window if any
+  _floatingWindow?.remove();
+
+  // Create the new floating window
+  _floatingWindow = OverlayEntry(
+    builder: (context) {
+      return FloatingWindow(
+        onClose: () {
+          _floatingWindow?.remove();
+          _floatingWindow = null;
+        },
+        title: '',
+        items: CreateSubTasks, // Pass the list of TodoSubModel here
+        todoID: '',
+        isCreateMode: true,
+      );
+    },
+  );
+  overlay.insert(_floatingWindow!);
+}
 
   // Show Floating Window For Todo Details (Handles showing existing todo details)
   void showFloatingWindow(BuildContext context, String title,
@@ -220,5 +249,48 @@ class TodolistController extends GetxController {
       },
     );
     overlay.insert(_floatingWindow!);
+  }
+
+  Future<void> addSubTaskForCreate(String subTaskTitle) async {
+    try{
+      if (subTaskTitle.isNotEmpty) {
+        CreateSubTasks.add(
+          TodoSubModel(
+            id: '', 
+            name: subTaskTitle, 
+            isDone: false
+          )
+          );
+        print("Sub-task added: $subTaskTitle");
+      }
+    } catch (e) {
+      print("Error adding new Todo with sub-tasks: $e");
+    }
+  }
+
+  // Add new Todo (Task) along with its sub-tasks
+  Future<void> addNewTodoWithSubTasks(String title) async {
+    try {
+      final todoRef = _firestore
+          .collection(Collection)
+          .doc(_auth.currentUser!.uid + "_Todo")
+          .collection(Collectionname);
+
+      TodoModel newTodoItem = TodoModel(title: title);
+      final newTodoRef = await todoRef.add(newTodoItem.toJson());
+
+      print("New Todo Added: $title");
+
+      final todoID = newTodoRef.id; 
+      for (TodoSubModel subTaskTitle in CreateSubTasks) {
+        await addNewTodoTask(todoID, subTaskTitle.name);
+      }
+      print("Sub-tasks added to Todo: $todoID");
+
+      // Clear the sub-task list after creation
+      CreateSubTasks.clear();
+    } catch (e) {
+      print("Error adding new Todo with sub-tasks: $e");
+    }
   }
 }
