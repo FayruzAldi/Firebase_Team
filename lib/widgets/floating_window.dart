@@ -86,8 +86,8 @@ class FloatingWindow extends StatelessWidget {
                                       Icons.delete,
                                       color: Colors.red,),
                                     onPressed: () async {
-                                      todolistController.deleteTodo(todoID);
                                       onClose();
+                                      todolistController.deleteTodo(todoID, items.length);
                                     },
                                   )
                                 : null,
@@ -191,6 +191,7 @@ class FloatingWindow extends StatelessWidget {
                             todolistController.addNewTodoWithSubTasks(
                               todolistController.CreateTitle.value
                             );
+                            todolistController.CreateTitle.value = "Task";                            
                             onClose();
                           } 
                           : 

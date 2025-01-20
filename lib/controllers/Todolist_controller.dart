@@ -184,18 +184,32 @@ class TodolistController extends GetxController {
     }
   }
 
-  Future<void> deleteTodo(String todoID) async{
-     try {
+  Future<void> deleteTodo(String todoID, int totalsub) async {
+    try {
+      // Reference to the main todo document
       final todoRef = _firestore
           .collection(Collection)
           .doc(_auth.currentUser!.uid + "_Todo")
           .collection(Collectionname)
           .doc(todoID);
 
+      // Query the subcollection (subtasks) and delete all subtasks
+      final subCollectionRef = todoRef.collection(SubCollectionname);
+      QuerySnapshot querySnapshot;
+
+      do {
+        querySnapshot = await subCollectionRef.limit(totalsub).get(); // Fetch in batches
+        for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+          await deleteTodoTask(todoID, doc.id); // Delete each subtask
+        }
+      } while (querySnapshot.docs.isNotEmpty);
+
+      // Finally, delete the main todo document
+      Title.value = "";
       await todoRef.delete();
-      print("deleted");
+      print("Todo and subtasks deleted successfully.");
     } catch (e) {
-      print("Error adding new checkbox: $e");
+      print("Error deleting todo: $e");
     }
   }
 
