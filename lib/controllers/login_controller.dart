@@ -22,12 +22,11 @@ class LoginController extends GetxController {
   final isLoading = false.obs;
   final isPasswordHidden = true.obs;
 
-  late final NotificationService _notificationService;
+  final NotificationService _notificationService = Get.find<NotificationService>();
 
   @override
   void onInit() {
     super.onInit();
-    _notificationService = Get.find<NotificationService>();
   }
 
   void togglePasswordVisibility() {
@@ -66,10 +65,6 @@ class LoginController extends GetxController {
           ...userDoc.data()!
         });
         print('Login berhasil untuk user: ${userData.name}');
-        
-        print('Saving FCM token after login...');
-        await _notificationService.saveNewToken();
-        print('FCM token saved successfully');
         
         print('Showing login success notification...');
         await _notificationService.showLoginSuccessNotification(userData.name);
@@ -143,11 +138,6 @@ class LoginController extends GetxController {
           .set(userData.toJson(), SetOptions(merge: true));
 
       print('Login dengan Google berhasil untuk user: ${userData.name}');
-      
-      // Simpan FCM token
-      print('Saving FCM token after Google Sign In...');
-      await _notificationService.saveNewToken();
-      print('FCM token saved successfully');
       
       // Tampilkan notifikasi
       print('Showing login success notification...');

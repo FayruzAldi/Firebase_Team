@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../Models/onboarding_model.dart';
-import '../routes/route.dart';
 import '../widgets/mycolors.dart';
 import '../controllers/onboarding_controller.dart';
 

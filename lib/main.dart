@@ -23,7 +23,7 @@ Future<void> main() async {
     // Inisialisasi Notification Service
     final notificationService = NotificationService();
     await notificationService.initialize();
-    Get.put(notificationService, permanent: true);
+    Get.put(notificationService);
     print('Notification Service initialized successfully');
 
     // Cek status onboarding
