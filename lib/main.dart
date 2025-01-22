@@ -72,7 +72,7 @@ class MyApp extends StatelessWidget {
     }
     
     // Jika belum login dan belum pernah lihat onboarding, ke onboarding
-    return MyRoutes.onboarding;
+    return MyRoutes.login;
   }
 }
 
