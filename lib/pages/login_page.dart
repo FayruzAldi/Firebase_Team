@@ -34,7 +34,7 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'To Do List App',
+                  'HariKu',
                   style: TextStyle(
                     fontFamily: 'WelcomeFont',
                     fontSize: 32,

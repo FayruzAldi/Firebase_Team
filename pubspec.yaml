@@ -42,7 +42,6 @@ dependencies:
   google_sign_in: ^6.1.6
   shared_preferences: ^2.2.2
   firebase_messaging: ^15.1.6
-  flutter_local_notifications: ^17.2.1
   awesome_notifications: ^0.10.0
 
 dev_dependencies:
@@ -69,6 +68,7 @@ flutter:
   assets:
   - lib/assets/google_logo.png
   - lib/assets/todolist.png
+  - lib/assets/todolist3d.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
